@@ -1,0 +1,20 @@
+# Starts PostgreSQL 16 with the schema and data preloaded:
+#   docker compose up -d
+#   psql postgresql://postgres:postgres@localhost:5432/shop -f problems/01_monthly_revenue_growth.sql
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: shop
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./docker/02_load.sql:/docker-entrypoint-initdb.d/02_load.sql:ro
+      - ./data:/data:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shop"]
+      interval: 2s
+      retries: 20
